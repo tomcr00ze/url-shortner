@@ -15,11 +15,15 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
-app.use(express.URLencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 // This line helps us server static files in the public folder.
 // Here we'll write our CSS and browser javascript code
 app.use(express.static(__dirname + "/public"));
+
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
+});
 
 app.listen(8000, () => {
   console.log("App listening on port 8000");
