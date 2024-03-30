@@ -21,9 +21,23 @@ app.use(express.urlencoded({ extended: true }));
 // Here we'll write our CSS and browser javascript code
 app.use(express.static(__dirname + "/public"));
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
+mongoose.connect(process.env.MONGO_DB_URI, (err) => {
+  if (err) {
+    throw err;
+    console.log(err)
+  }
+  console.log("Database connected successfully");
 });
+
+// Middleware to validate url
+const validateURL = async (req, res, next) => {
+  const { url } = req.body;
+  const isExist = await urlExist(url);
+  if (!isExist) {
+    return res.json({ message: "Invalid URL", type: "failure" });
+  }
+  next();
+};
 
 app.listen(8000, () => {
   console.log("App listening on port 8000");
