@@ -39,6 +39,24 @@ const validateURL = async (req, res, next) => {
   next();
 };
 
+// home page route
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
+
+});
+
+// get original link by id (shorten link)
+app.get("/:id", async (req, res) => {
+  const id = req.params.id;
+
+  const originalLink = await URL.findOne({ id });
+
+  if (!originalLink) {
+    return res.sendFile(__dirname + "/public/404.html");
+  }
+  res.redirect(originalLink.url);
+});
+
 app.listen(8000, () => {
   console.log("App listening on port 8000");
 });
