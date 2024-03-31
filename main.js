@@ -21,13 +21,13 @@ app.use(express.urlencoded({ extended: true }));
 // Here we'll write our CSS and browser javascript code
 app.use(express.static(__dirname + "/public"));
 
-mongoose.connect(process.env.MONGO_DB_URI, (err) => {
-  if (err) {
-    throw err;
-    console.log(err)
-  }
-  console.log("Database connected successfully");
-});
+mongoose.connect(process.env.MONGO_DB_URI)
+  .then(() => {
+    console.log("Database connected successfully");
+  })
+  .catch((err) => {
+    console.error("Error connecting to database:", err);
+  });
 
 // Middleware to validate url
 const validateURL = async (req, res, next) => {
@@ -43,6 +43,30 @@ const validateURL = async (req, res, next) => {
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 
+});
+
+// route to post original url(long)
+// it will create a shorurl corresponding to the long url given.
+app.post("/link", validateURL, (req, res) => {
+  
+  res.set({
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+});
+  const { url } = req.body;
+
+  // Generate a unique id to identify the url in the database
+  let id = nanoid(7);
+
+  let newURL = new URL({ url, id });
+  try {
+    newURL.save();
+  } catch (err) {
+    res.send("An error was encountered! Please try again.");
+  }
+  const domain = process.env.PRODUCTION_URL || 'http://localhost:8000/'
+  // Send the server address with the unique id
+  res.json({ message: `${domain}${newURL.id}`, type: "success" });
 });
 
 // get original link by id (shorten link)
